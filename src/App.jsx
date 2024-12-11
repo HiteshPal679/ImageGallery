@@ -5,7 +5,6 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import conf from "./conf/conf";
 import { TextField, Select, MenuItem, CircularProgress, Container, Typography, Box, Switch, CssBaseline, createTheme, ThemeProvider, FormControlLabel } from '@mui/material';
 
-
 const API_KEY = conf.pexelsApiKey;
 const API_URL = conf.pexelsUrl;
 
@@ -20,12 +19,21 @@ function App() {
   const [error, setError] = useState(null);
   const [darkMode, setDarkMode] = useState(false);
 
-  
   const theme = createTheme({
     palette: {
       mode: darkMode ? 'dark' : 'light',
     },
   });
+
+  const debounce = (func, delay) => {
+    let timer;
+    return function (...args) {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        func(...args);
+      }, delay);
+    };
+  };
 
   const fetchPhotos = async () => {
     if (!searchTerm) return;
@@ -54,6 +62,8 @@ function App() {
     setLoading(false);
   };
 
+  const debouncedFetchPhotos = debounce(fetchPhotos, 500);
+
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
   };
@@ -70,7 +80,7 @@ function App() {
 
   useEffect(() => {
     if (searchTerm) {
-      fetchPhotos();
+      debouncedFetchPhotos();
     }
   }, [searchTerm, numPhotos]);
 
@@ -89,7 +99,6 @@ function App() {
               </Typography>
             </Box>
             <Box>
-             
               <FormControlLabel
                 control={
                   <Switch
@@ -106,7 +115,6 @@ function App() {
           </header>
 
           <Routes>
-            {/* Main Page */}
             <Route
               path="/"
               element={
@@ -154,7 +162,6 @@ function App() {
               }
             />
 
-            {/* Photo Details Page */}
             <Route path="/photo/:id" element={<PhotoDetails photoData={photos} />} />
           </Routes>
         </div>
